@@ -38,6 +38,7 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@test.com',
             'password' => Hash::make('password'),
             'group_id' => $group->id,
+            'is_admin' => true,
         ]);
     }
 }
