@@ -6,8 +6,10 @@ use App\Models\User;
 use App\Models\Faculty;
 use App\Models\Specialty;
 use App\Models\Group;
+use App\Models\Category;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class DatabaseSeeder extends Seeder
 {
@@ -40,5 +42,19 @@ class DatabaseSeeder extends Seeder
             'group_id' => $group->id,
             'is_admin' => true,
         ]);
+
+        // 5. Создаем категории
+        $categories = [
+            'Программирование',
+            'Дизайн',
+            'Маркетинг',
+        ];
+
+        foreach ($categories as $name) {
+            Category::create([
+                'name' => $name,
+                'slug' => Str::slug($name), // Создаст: 'programmirovanie', 'dizajn', 'marketing'
+            ]);
+        }
     }
 }
