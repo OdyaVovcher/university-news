@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
@@ -35,6 +36,14 @@ class UserResource extends Resource
                     ->email()
                     ->required()
                     ->label('Email'),
+
+                // Добавленное поле пароля
+                Forms\Components\TextInput::make('password')
+                    ->password()
+                    ->label('Пароль')
+                    ->dehydrateStateUsing(fn (string $state): string => Hash::make($state))
+                    ->dehydrated(fn (?string $state): bool => filled($state))
+                    ->required(fn (string $operation): bool => $operation === 'create'),
 
                 Forms\Components\Toggle::make('is_admin')
                     ->label('Администратор'),
