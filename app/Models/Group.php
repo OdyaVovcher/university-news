@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Group extends Model
 {
-    protected $fillable = ['specialty_id', 'name', 'course'];
+    protected $fillable = ['specialty_id', 'name'];
 
     public function specialty(): BelongsTo
     {

@@ -33,19 +33,6 @@ class GroupResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
-
-                // Работаем с полем 'course' как с выбором номера курса из списка
-                Forms\Components\Select::make('course')
-                    ->label('Курс')
-                    ->options([
-                        1 => '1 курс',
-                        2 => '2 курс',
-                        3 => '3 курс',
-                        4 => '4 курс',
-                        5 => '5 курс',
-                        6 => '6 курс',
-                    ])
-                    ->required(),
             ]);
     }
 
@@ -57,10 +44,6 @@ class GroupResource extends Resource
                 Tables\Columns\TextColumn::make('name')->label('Группа')->searchable(),
                 Tables\Columns\TextColumn::make('specialty.name')->label('Специальность'),
                 
-                // Отображаем значение из колонки 'course' напрямую
-                Tables\Columns\TextColumn::make('course')
-                    ->label('Курс')
-                    ->sortable(),
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),

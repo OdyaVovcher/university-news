@@ -3,54 +3,77 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\UserResource\Pages;
+use App\Models\Group;
 use App\Models\User;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Hash;
 
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
 
-    // Меняв иконку в левом меню на пользователей
     protected static ?string $navigationIcon = 'heroicon-o-users';
 
-    // Русские названия в боковой панели
     protected static ?string $navigationLabel = 'Пользователи';
-    protected static ?string $pluralModelLabel = 'Пользователи';
+
     protected static ?string $modelLabel = 'Пользователь';
+
+    protected static ?string $pluralModelLabel = 'Пользователи';
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')
-                    ->label('Имя')
                     ->required()
-                    ->maxLength(255),
+                    ->label('Имя'),
 
                 Forms\Components\TextInput::make('email')
-                    ->label('Email')
                     ->email()
                     ->required()
-                    ->maxLength(255),
+                    ->label('Email'),
 
                 Forms\Components\Toggle::make('is_admin')
                     ->label('Администратор'),
 
-                Forms\Components\TextInput::make('password')
-                    ->label('Пароль')
-                    ->password()
-                    // Хешируем пароль при сохранении
-                    ->dehydrateStateUsing(fn ($state) => Hash::make($state))
-                    // Обновляем только если поле было заполнено
-                    ->dehydrated(fn ($state) => filled($state))
-                    // Обязательно только при СОЗДАНИИ нового пользователя
-                    ->required(fn (string $context): bool => $context === 'create')
-                    ->maxLength(255),
+                // Выбор Группы (динамически подтягивает факультет и специальность)
+                Forms\Components\Select::make('group_id')
+                    ->relationship('group', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->label('Группа'),
+
+                // Авто-информация о Факультете (только чтение)
+                Forms\Components\Placeholder::make('faculty_info')
+                    ->label('Факультет')
+                    ->content(function ($get) {
+                        $groupId = $get('group_id');
+                        if (! $groupId) {
+                            return '—';
+                        }
+
+                        $group = Group::with('specialty.faculty')->find($groupId);
+
+                        return $group?->specialty?->faculty?->name ?? '—';
+                    }),
+
+                // Авто-информация о Специальности (только чтение)
+                Forms\Components\Placeholder::make('specialty_info')
+                    ->label('Специальность')
+                    ->content(function ($get) {
+                        $groupId = $get('group_id');
+                        if (! $groupId) {
+                            return '—';
+                        }
+
+                        $group = Group::with('specialty')->find($groupId);
+
+                        return $group?->specialty?->name ?? '—';
+                    }),
             ]);
     }
 
@@ -67,6 +90,16 @@ class UserResource extends Resource
                     ->label('Email')
                     ->searchable()
                     ->sortable(),
+
+                // Вывод наименования связанной группы
+                Tables\Columns\TextColumn::make('group.name')
+                    ->label('Группа')
+                    ->searchable()
+                    ->sortable(),
+
+                // Вывод названия Факультета через метод-аксессор getFacultyAttribute
+                Tables\Columns\TextColumn::make('faculty.name')
+                    ->label('Факультет'),
 
                 Tables\Columns\IconColumn::make('is_admin')
                     ->label('Админ')
